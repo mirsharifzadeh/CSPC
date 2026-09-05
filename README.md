@@ -24,7 +24,7 @@ pytest -v
 ## PW1 — Lab A: Reproducible Foundations
 
 **What I built:**
-- <one or two lines: the CSPC repo, the environment, the decay simulation, the tests>
+- I built tests for decay and speed.py file for comparison of pure python and numPy version.
 
 **Speed comparison (loop vs NumPy):**
 
