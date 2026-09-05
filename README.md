@@ -1,11 +1,12 @@
 # CSPC - Computer Science for Physics and Chemistry
 My coursework repository. Each practical is under PW1/LAB_A/.
+
 ## Setup
 
 Create the environment for a given lab:
 conda env create -f PW1/LAB_A/environment.yml
 conda activate cspc
----
+
 ## PW1 - Lab A: Reproducible Foundations
 
 **What I built:**
