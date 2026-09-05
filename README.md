@@ -39,7 +39,7 @@ pytest -v
 
 **Conclusion:**
 - Tests passed correctly, simulation gives close values to scientific formula.
--  have observed that
+- I have observed that
 using numpy makes the simulation 1526.52 times faster rather using pure python code with loop.
 
 ---
