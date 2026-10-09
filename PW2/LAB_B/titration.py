@@ -29,13 +29,18 @@ print("Equivalence point", V_max_slope)
 # TODO 3: make two plots side by side: (left) pH vs volume with a line at the
 #         equivalence point; (right) the slope vs volume, showing it peaks
 #         at the equivalence point. Save as titration.png.
-
+    
 fig, (pH_V, slope_V) = plt.subplots(nrows=1, ncols=2, figsize=(8, 8))
 
 pH_V.plot(pH, volume_base, color="blue")
 pH_V.set_xlabel("pH")
 pH_V.set_ylabel("Volume")
 pH_V.set_title("pH vs Volume")
+pH_V.axhline(y=V_max_slope, color="black", linestyle=":")
 
 slope_V.plot(pH_slope, volume_base, color="blue")
-slope_V.set_xlabel()
+slope_V.set_xlabel("Slope")
+slope_V.set_ylabel("Volume")
+slope_V.set_title("Slope vs Volume")
+
+plt.savefig("titration.png")
