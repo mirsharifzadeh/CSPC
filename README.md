@@ -100,3 +100,99 @@ using numpy makes the simulation 1526.52 times faster rather using pure python c
 - Optimization techniques allow us to effectively solve non-linear chemical problems, from parameter estimation to equilibrium composition. However, attention must be paid to initial conditions and second-derivative checks ($g''(x) > 0$) to ensure convergence to true physical minima rather than arbitrary stationary points.
 
 ---
+
+---
+
+## PW3 - Data, Distributions, Testing, and Causation
+
+**What I built:**
+- To evaluate whether the continuous variables in the dataset (`age`, `chol`, `trestbps`, and `thalach`) follow a normal distribution, both graphical checks (histograms and Q-Q plots) and theoretical expectations were analyzed.
+
+#### Variable-by-Variable Verdicts:
+
+1. **`age` (Age)**
+   - **Verdict:** Approximately Normal
+   - **Reasoning:** The histogram shows a fairly symmetric bell-shaped curve centered around 55 years. In the Q-Q plot, the data points closely align with the red theoretical reference line, with minimal deviations only at the extreme tails.
+
+2. **`chol` (Serum Cholesterol)**
+   - **Verdict:** Non-Normal (Right-Skewed)
+   - **Reasoning:** The distribution exhibits a clear right skew (positive skewness). While the central bulk follows an approximate pattern, the Q-Q plot reveals significant upward deviation on the upper tail, caused by extreme outliers (values exceeding 400–500 mg/dl).
+
+3. **`trestbps` (Resting Blood Pressure)**
+   - **Verdict:** Moderately Right-Skewed / Non-Normal
+   - **Reasoning:** The histogram demonstrates a rightward tail with distinct peaking/discretization around standard clinical measurements. The Q-Q plot shows noticeable upward curvature at higher values, indicating that higher blood pressure values depart from a strict normal distribution.
+
+4. **`thalach` (Maximum Heart Rate Achieved)**
+   - **Verdict:** Approximately Normal (Slightly Left-Skewed)
+   - **Reasoning:** The data closely follows the diagonal reference line across the majority of quantiles in the Q-Q plot. The histogram displays a mostly symmetric spread centered around 150 bpm, despite a minor leftward tail at the lower extreme.
+
+---
+
+**Are Datas Normally Distributed?**
+- While `age` and `thalach` can be treated as **approximately normal**, `chol` and `trestbps` deviate from normality due to right-skewness and outliers. This distinction will guide the choice between parametric and non-parametric statistical methods in Session 2.
+
+### Is the Effect Real? (Comparing Heart Rate between Patient Groups)
+
+To determine whether heart-disease patients reach a significantly different maximum heart rate (`thalach`) compared to healthy individuals, the dataset was split into two independent groups based on the `target` variable (`target = 1` for heart disease patients, `target = 0` for healthy patients).
+
+#### Methodology
+Based on the Session 1 findings where `thalach` was identified as approximately normally distributed, a two-sample **Welch's t-test** (`equal_var=False`) was conducted. Welch's t-test was chosen because it does not assume equal variances between the two groups, making it a robust parametric method for medical sample comparisons.
+
+#### Numerical Results
+- **Healthy Group Mean (`target = 0`):** 158.38 bpm
+- **Disease Group Mean (`target = 1`):** 139.26 bpm
+- **t-statistic:** 7.9636
+- **p-value:** $3.4570 \times 10^{-14}$ (or $p < 0.001$)
+
+#### Conclusion
+The difference in maximum heart rate between heart-disease patients and healthy individuals is **statistically significant** ($p \approx 3.46 \times 10^{-14}$, which is far below the standard threshold of $\alpha = 0.05$). On average, patients with heart disease reach a noticeably lower maximum heart rate ($\approx 139.26$ bpm) compared to healthy individuals ($\approx 158.38$ bpm), confirming that the observed effect is real and not a result of random sample variation.
+
+### Quantifying Uncertainty on Group Means
+
+To assess the precision of the estimated group means for maximum heart rate (`thalach`), the **Standard Error of the Mean (SEM)** and **95% Confidence Intervals (CIs)** were calculated for both groups:
+
+- **Healthy Group (`target = 0`):**
+  - **Mean `thalach`:** $158.38$ bpm
+  - **95% Confidence Interval:** $[155.12, 161.64]$ bpm (or $\pm \text{SEM}$)
+- **Disease Group (`target = 1`):**
+  - **Mean `thalach`:** $139.26$ bpm
+  - **95% Confidence Interval:** $[135.75, 142.77]$ bpm (or $\pm \text{SEM}$)
+
+#### Agreement with t-test Conclusion
+Yes, the plot strongly agrees with the Welch's t-test conclusion reached above:
+1. **Clear Separation:** The 95% confidence interval error bars of the two groups do not overlap at all. 
+2. **Distinct Populations:** The non-overlapping error bars visually confirm that the average maximum heart rate for heart-disease patients is distinctly lower than that for healthy individuals, demonstrating that the observed difference is statistically robust and meaningful.
+
+### Do two things move together?
+There is not strong relation between age and thalach. "pearsonr" method was used for this test from stats library.
+### Dataset 2 - A chemical-exposure mystery 
+
+#### The Naive Analysis
+
+* **Method:** Pearson correlation coefficients ($r$) and $p$-values were calculated between each chemical (`benzene`, `cadmium`) and `malignancy`.
+* **Results:**
+  * **Cadmium vs. Malignancy:** $r \approx 0.880$, $p < 0.0001$
+  * **Benzene vs. Malignancy:** $r \approx 0.385$, $p < 0.0001$
+* **Interpretation:** Taken at face value, **Cadmium** appears to be the primary cause of malignancy, as its correlation coefficient is substantially higher than that of Benzene.
+
+#### Looking again for confounder effect
+
+* **Method:** To control for potential confounders (`pollution_index` / `age`), the dataset was filtered to a subset with similar confounder values, effectively holding the third variable constant while recomputing associations.
+* **Results:** Once the confounding variable was held constant, Cadmium's correlation dropped significantly ($r \approx 0.316$), but the correlation of Benzene increased ($r \approx 0.702$) whereas Benzene's true association emerged.
+* **Interpretation:**
+  * **Looks the main reason at first:** **Cadmium** — Its initial strong association was merely a spurious correlation driven by the background confounder.
+  * **Real Cause:** **Benzene** — Demonstrates the true underlying causal link once the confounding effect is controlled.
+
+## Conclusion:
+
+### 1. Heart Disease Analysis (`heart.csv`)
+* **Distribution & Normality:** Continuous variables (`age`, `chol`, `trestbps`, `thalach`) were evaluated via Q-Q plots and Shapiro-Wilk testing to determine the appropriate parametric vs. non-parametric testing pipeline.
+* **Group Differences (`thalach` vs. `target`):** Hypothesis testing alongside Standard Error (SE) confidence intervals confirmed a statistically significant difference in maximum heart rate between patients with heart disease and healthy individuals.
+* **Age vs. Heart Rate:** A clear negative correlation was observed, indicating that maximum heart rate (`thalach`) systematically declines with increasing `age`.
+
+### 2. Chemical Exposure Mystery (`chemicals_cancer.csv`)
+* **Naive Analysis:** Initial unadjusted Pearson correlation suggested **Cadmium** was the primary cause of malignancy ($r \approx 0.880$) compared to **Benzene** ($r \approx 0.385$).
+* **Confounder Control:** After filtering and holding the confounding variable (`pollution_index`) constant, Cadmium's association dropped significantly, revealing its initial strength to be a **spurious correlation** driven by environmental pollution.
+* **Causal Verdict:** **Benzene** is the true causal driver of malignancy. Controlling for the confounder closed the backdoor path and isolated the genuine direct effect.
+
+---
